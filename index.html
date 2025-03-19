@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoo Viewing Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #8BC34A;
+            overflow: hidden;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #8BC34A;
+        }
+        
+        #player {
+            position: absolute;
+            width: 30px;
+            height: 50px;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+        
+        /* Kid styling */
+        .kid-head {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FFD3B6;
+            border-radius: 50%;
+            top: 0;
+            left: 5px;
+        }
+        
+        .kid-body {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FF5722;
+            border-radius: 5px;
+            top: 20px;
+            left: 5px;
+        }
+        
+        .kid-leg-left, .kid-leg-right {
+            position: absolute;
+            width: 6px;
+            height: 15px;
+            background-color: #3F51B5;
+            top: 40px;
+            border-radius: 3px;
+        }
+        
+        .kid-leg-left {
+            left: 7px;
+        }
+        
+        .kid-leg-right {
+            left: 17px;
+        }
+        
+        .kid-arm-left, .kid-arm-right {
+            position: absolute;
+            width: 6px;
+            height: 15px;
+            background-color: #FF5722;
+            top: 22px;
+            border-radius: 3px;
+        }
+        
+        .kid-arm-left {
+            left: -2px;
+            transform-origin: top center;
+        }
+        
+        .kid-arm-right {
+            left: 26px;
+            transform-origin: top center;
+        }
+        
+        .tile {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #689F38;
+            border: 2px solid #558B2F;
+            box-sizing: border-box;
+        }
+        
+        .footprint {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FFB74D;
+            border-radius: 50%;
+            opacity: 0.7;
+            z-index: 2;
+            transition: background-color 1s ease;
+        }
+        
+        .animal {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            z-index: 5;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 220px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            z-index: 20;
+        }
+        
+        .animal-info {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #FFF9C4;
+            border-radius: 5px;
+        }
+        
+        .path {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #D7CCC8;
+            z-index: 1;
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 30;
+        }
+        
+        #controls button {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        #controls button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+        
+        .fence {
+            position: absolute;
+            background-color: #795548;
+            z-index: 3;
+        }
+        
+        .fence.horizontal {
+            height: 10px;
+        }
+        
+        .fence.vertical {
+            width: 10px;
+        }
+        
+        .tree {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #33691E;
+            border-radius: 50%;
+            z-index: 4;
+        }
+        
+        .welcome {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        .welcome button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .game-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+        }
+        
+        .game-over button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player">
+            <div class="kid-head"></div>
+            <div class="kid-body"></div>
+            <div class="kid-leg-left"></div>
+            <div class="kid-leg-right"></div>
+            <div class="kid-arm-left"></div>
+            <div class="kid-arm-right"></div>
+        </div>
+        <div class="game-status">
+            <div>Steps: <span id="steps-counter">0</span> / <span id="max-steps">200</span></div>
+            <div>Animals Found: <span id="animals-found">0</span> / 8</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="steps-progress"></div>
+            </div>
+        </div>
+        <div class="info-panel">
+            <h3>Zoo Exploration</h3>
+            <p>Move around to discover animals</p>
+            <div class="animal-info" id="animal-info">
+                <h4 id="animal-name"></h4>
+                <p id="animal-description"></p>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="btn-left">←</button>
+            <button id="btn-up">↑</button>
+            <button id="btn-down">↓</button>
+            <button id="btn-right">→</button>
+        </div>
+        <div class="welcome" id="welcome">
+            <h2>Welcome to the Virtual Zoo!</h2>
+            <p>Explore the zoo by moving around with the arrow buttons or keyboard arrows.</p>
+            <p>Find all 8 animals hiding in the zoo within 200 steps!</p>
+            <button id="start-game">Start Exploring</button>
+        </div>
+        <div class="game-over" id="game-over">
+            <h2 id="game-over-title">Game Over!</h2>
+            <p id="game-over-message">You've run out of steps!</p>
+            <p id="game-over-stats"></p>
+            <button id="restart-game">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameContainer = document.getElementById('game-container');
+            const player = document.getElementById('player');
+            const animalInfo = document.getElementById('animal-info');
+            const animalNameEl = document.getElementById('animal-name');
+            const animalDescriptionEl = document.getElementById('animal-description');
+            const stepsCounter = document.getElementById('steps-counter');
+            const maxStepsEl = document.getElementById('max-steps');
+            const stepsProgress = document.getElementById('steps-progress');
+            const animalsFoundEl = document.getElementById('animals-found');
+            const welcome = document.getElementById('welcome');
+            const startButton = document.getElementById('start-game');
+            const gameOver = document.getElementById('game-over');
+            const gameOverTitle = document.getElementById('game-over-title');
+            const gameOverMessage = document.getElementById('game-over-message');
+            const gameOverStats = document.getElementById('game-over-stats');
+            const restartButton = document.getElementById('restart-game');
+            
+            // Game state
+            let playerX = Math.floor(window.innerWidth / 2);
+            let playerY = Math.floor(window.innerHeight / 2);
+            let stepCount = 0;
+            const MAX_STEPS = 200;
+            let discoveredAnimals = 0;
+            const tileSize = 80;
+            const numTilesX = Math.ceil(window.innerWidth / tileSize);
+            const numTilesY = Math.ceil(window.innerHeight / tileSize);
+            const animals = [];
+            const footprints = [];
+            const MAX_FOOTPRINTS = 20;
+            let isWalking = false;
+            let walkingDirection = 'right';
+            let animationFrame;
+            
+            // Update max steps display
+            maxStepsEl.textContent = MAX_STEPS;
+            
+            // Animal data
+            const animalTypes = [
+                {
+                    emoji: '🦁',
+                    name: 'Lion',
+                    description: 'The king of the jungle! Lions are social big cats that live in groups called prides.',
+                    color: '#FFA000'
+                },
+                {
+                    emoji: '🐘',
+                    name: 'Elephant',
+                    description: 'The largest land animal with amazing memory and intelligence.',
+                    color: '#9E9E9E'
+                },
+                {
+                    emoji: '🦒',
+                    name: 'Giraffe',
+                    description: 'Tallest land animal with a very long neck to reach leaves in tall trees.',
+                    color: '#FFC107'
+                },
+                {
+                    emoji: '🐵',
+                    name: 'Monkey',
+                    description: 'Playful and intelligent primates that love to climb and swing.',
+                    color: '#795548'
+                },
+                {
+                    emoji: '🦓',
+                    name: 'Zebra',
+                    description: 'Known for their distinctive black and white stripes, no two zebras have the same pattern.',
+                    color: '#E0E0E0'
+                },
+                {
+                    emoji: '🦛',
+                    name: 'Hippo',
+                    description: 'Despite their size, hippos are surprisingly fast both in water and on land.',
+                    color: '#9C27B0'
+                },
+                {
+                    emoji: '🐧',
+                    name: 'Penguin',
+                    description: 'Flightless birds that are excellent swimmers and live mostly in the Southern Hemisphere.',
+                    color: '#01579B'
+                },
+                {
+                    emoji: '🦩',
+                    name: 'Flamingo',
+                    description: 'Known for their bright pink feathers and standing on one leg.',
+                    color: '#FF4081'
+                }
+            ];
+
+            // Initialize game
+            function initGame() {
+                // Create tiles
+                for (let x = 0; x < numTilesX; x++) {
+                    for (let y = 0; y < numTilesY; y++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'tile';
+                        tile.style.left = (x * tileSize) + 'px';
+                        tile.style.top = (y * tileSize) + 'px';
+                        gameContainer.appendChild(tile);
+                    }
+                }
+                
+                // Create paths
+                createPaths();
+                
+                // Create fences
+                createFences();
+                
+                // Place trees
+                placeTrees(20);
+                
+                // Place animals
+                placeAnimals();
+                
+                // Position player
+                updatePlayerPosition();
+                
+                // Add control events
+                setupControls();
+            }
+            
+            function createPaths() {
+                // Create main horizontal path
+                const mainPathY = Math.floor(numTilesY / 2);
+                for (let x = 0; x < numTilesX; x++) {
+                    createPathTile(x * tileSize + 10, mainPathY * tileSize + 10);
+                }
+                
+                // Create vertical paths
+                for (let i = 1; i < 4; i++) {
+                    const pathX = Math.floor(numTilesX / 4) * i;
+                    for (let y = 0; y < numTilesY; y++) {
+                        createPathTile(pathX * tileSize + 10, y * tileSize + 10);
+                    }
+                }
+            }
+            
+            function createPathTile(x, y) {
+                const path = document.createElement('div');
+                path.className = 'path';
+                path.style.left = x + 'px';
+                path.style.top = y + 'px';
+                gameContainer.appendChild(path);
+            }
+            
+            function createFences() {
+                // Create horizontal fences
+                for (let i = 0; i < 3; i++) {
+                    const fenceY = Math.floor(numTilesY / 3) * (i + 1);
+                    if (fenceY !== Math.floor(numTilesY / 2)) { // Skip the middle for main path
+                        createFence(0, fenceY * tileSize, window.innerWidth, 10, 'horizontal');
+                    }
+                }
+                
+                // Create vertical fences
+                for (let i = 0; i < 3; i++) {
+                    const fenceX = Math.floor(numTilesX / 3) * (i + 1);
+                    createFence(fenceX * tileSize, 0, 10, window.innerHeight, 'vertical');
+                }
+                
+                // Create fence gates (gaps)
+                createFenceGaps();
+            }
+            
+            function createFence(x, y, width, height, orientation) {
+                const fence = document.createElement('div');
+                fence.className = 'fence ' + orientation;
+                fence.style.left = x + 'px';
+                fence.style.top = y + 'px';
+                fence.style.width = width + 'px';
+                fence.style.height = height + 'px';
+                gameContainer.appendChild(fence);
+            }
+            
+            function createFenceGaps() {
+                // This would be more complex - for now, our paths go through the fences
+            }
+            
+            function placeTrees(count) {
+                for (let i = 0; i < count; i++) {
+                    const treeX = Math.floor(Math.random() * (window.innerWidth - 40));
+                    const treeY = Math.floor(Math.random() * (window.innerHeight - 40));
+                    
+                    // Don't place trees on paths
+                    if (!isOnPath(treeX, treeY)) {
+                        const tree = document.createElement('div');
+                        tree.className = 'tree';
+                        tree.style.left = treeX + 'px';
+                        tree.style.top = treeY + 'px';
+                        gameContainer.appendChild(tree);
+                    }
+                }
+            }
+            
+            function isOnPath(x, y) {
+                // Simple check - would be more sophisticated in a real game
+                const pathSize = 60;
+                const mainPathY = Math.floor(numTilesY / 2) * tileSize + 10;
+                
+                if (y >= mainPathY && y <= mainPathY + pathSize) {
+                    return true;
+                }
+                
+                for (let i = 1; i < 4; i++) {
+                    const pathX = Math.floor(numTilesX / 4) * i * tileSize + 10;
+                    if (x >= pathX && x <= pathX + pathSize) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+            
+            function placeAnimals() {
+                // Clone animal types to avoid duplicates
+                const availableAnimals = [...animalTypes];
+                
+                // Place each animal
+                for (let i = 0; i < 8; i++) {
+                    if (availableAnimals.length === 0) break;
+                    
+                    const randomIndex = Math.floor(Math.random() * availableAnimals.length);
+                    const animalType = availableAnimals.splice(randomIndex, 1)[0];
+                    
+                    // Find a random position that isn't on a path
+                    let animalX, animalY;
+                    do {
+                        animalX = Math.floor(Math.random() * (window.innerWidth - 60));
+                        animalY = Math.floor(Math.random() * (window.innerHeight - 60));
+                    } while (isOnPath(animalX, animalY));
+                    
+                    const animal = document.createElement('div');
+                    animal.className = 'animal';
+                    animal.textContent = animalType.emoji;
+                    animal.style.left = animalX + 'px';
+                    animal.style.top = animalY + 'px';
+                    animal.style.backgroundColor = animalType.color;
+                    animal.dataset.name = animalType.name;
+                    animal.dataset.description = animalType.description;
+                    animal.dataset.discovered = 'false';
+                    gameContainer.appendChild(animal);
+                    
+                    animals.push({
+                        element: animal,
+                        x: animalX,
+                        y: animalY,
+                        radius: 150, // Detection radius
+                        discovered: false,
+                        data: animalType
+                    });
+                }
+            }
+            
+            function updatePlayerPosition() {
+                player.style.left = (playerX - 15) + 'px'; // Center the player
+                player.style.top = (playerY - 25) + 'px'; // Center the player
+                
+                // Set player direction
+                if (walkingDirection === 'left') {
+                    player.style.transform = 'scaleX(-1)';
+                } else {
+                    player.style.transform = 'scaleX(1)';
+                }
+                
+                // Check for animals nearby
+                checkAnimalsNearby();
+            }
+            
+            function addFootprint() {
+                const footprint = document.createElement('div');
+                footprint.className = 'footprint';
+                footprint.style.left = (playerX - 10) + 'px';
+                footprint.style.top = (playerY - 10) + 'px';
+                gameContainer.appendChild(footprint);
+                
+                // Add to the footprints array
+                footprints.push({
+                    element: footprint,
+                    age: 0
+                });
+                
+                // Remove oldest footprint if we exceed the max
+                if (footprints.length > MAX_FOOTPRINTS) {
+                    const oldest = footprints.shift();
+                    oldest.element.remove();
+                }
+                
+                // Update all footprints color based on age
+                updateFootprints();
+            }
+            
+            function updateFootprints() {
+                footprints.forEach((footprint, index) => {
+                    // Calculate color based on age (newest to oldest)
+                    const age = index / MAX_FOOTPRINTS; // 0 to 1 where 0 is newest
+                    const r = Math.floor(255 * (1 - age)); // Red component decreases with age
+                    const g = Math.floor(159 + (96 * age)); // Green component increases with age
+                    const b = Math.floor(77 * (1 - age)); // Blue component decreases with age
+                    
+                    footprint.element.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+                    footprint.element.style.opacity = 1 - (age * 0.5); // Fade out slightly with age
+                });
+            }
+            
+            function checkAnimalsNearby() {
+                let foundNewAnimal = false;
+                
+                animals.forEach(animal => {
+                    const dx = animal.x + 30 - playerX; // Center of animal
+                    const dy = animal.y + 30 - playerY; // Center of animal
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < animal.radius) {
+                        // Animal is in range
+                        if (!animal.discovered) {
+                            animal.discovered = true;
+                            animal.element.dataset.discovered = 'true';
+                            animal.element.style.transform = 'scale(1)';
+                            foundNewAnimal = true;
+                            discoveredAnimals++;
+                            animalsFoundEl.textContent = discoveredAnimals;
+                            
+                            // Show information
+                            showAnimalInfo(animal.data);
+                        }
+                    } else if (animal.discovered) {
+                        // Hide animal that's out of range
+                        animal.element.style.transform = 'scale(0)';
+                    }
+                });
+                
+                if (foundNewAnimal && discoveredAnimals === animals.length) {
+                    setTimeout(() => {
+                        endGame(true);
+                    }, 500);
+                }
+            }
+            
+            function showAnimalInfo(animal) {
+                animalNameEl.textContent = animal.name;
+                animalDescriptionEl.textContent = animal.description;
+                animalInfo.style.backgroundColor = animal.color + '33'; // Add transparency
+                animalInfo.style.display = 'block';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    animalInfo.style.display = 'none';
+                }, 5000);
+            }
+            
+            function movePlayer(dx, dy) {
+                if (stepCount >= MAX_STEPS) {
+                    endGame(false);
+                    return;
+                }
+                
+                const newX = playerX + dx;
+                const newY = playerY + dy;
+                
+                // Check boundaries
+                if (newX < 0 || newX > window.innerWidth || newY < 0 || newY > window.innerHeight) {
+                    return;
+                }
+                
+                // Set walking direction
+                if (dx < 0) walkingDirection = 'left';
+                if (dx > 0) walkingDirection = 'right';
+                
+                // Update position
+                playerX = newX;
+                playerY = newY;
+                stepCount++;
+                
+                // Update UI
+                stepsCounter.textContent = stepCount;
+                stepsProgress.style.width = (stepCount / MAX_STEPS * 100) + '%';
+                updatePlayerPosition();
+                addFootprint();
+                
+                // Start walking animation if not already walking
+                if (!isWalking) {
+                    isWalking = true;
+                    animateWalking();
+                    setTimeout(() => {
+                        isWalking = false;
+                    }, 200);
+                }
+            }
+            
+            function animateWalking() {
+                const kidLegLeft = document.querySelector('.kid-leg-left');
+                const kidLegRight = document.querySelector('.kid-leg-right');
+                const kidArmLeft = document.querySelector('.kid-arm-left');
+                const kidArmRight = document.querySelector('.kid-arm-right');
+                
+                let frame = 0;
+                const frames = [
+                    // Frame 1: Step forward
+                    () => {
+                        kidLegLeft.style.transform = 'rotate(-30deg)';
+                        kidLegRight.style.transform = 'rotate(30deg)';
+                        kidArmLeft.style.transform = 'rotate(30deg)';
+                        kidArmRight.style.transform = 'rotate(-30deg)';
+                    },
+                    // Frame 2: Back to center
+                    () => {
+                        kidLegLeft.style.transform = 'rotate(0deg)';
+                        kidLegRight.style.transform = 'rotate(0deg)';
+                        kidArmLeft.style.transform = 'rotate(0deg)';
+                        kidArmRight.style.transform = 'rotate(0deg)';
+                    },
+                    // Frame 3: Alternate step
+                    () => {
+                        kidLegLeft.style.transform = 'rotate(30deg)';
+                        kidLegRight.style.transform = 'rotate(-30deg)';
+                        kidArmLeft.style.transform = 'rotate(-30deg)';
+                        kidArmRight.style.transform = 'rotate(30deg)';
+                    },
+                    // Frame 4: Back to center
+                    () => {
+                        kidLegLeft.style.transform = 'rotate(0deg)';
+                        kidLegRight.style.transform = 'rotate(0deg)';
+                        kidArmLeft.style.transform = 'rotate(0deg)';
+                        kidArmRight.style.transform = 'rotate(0deg)';
+                    }
+                ];
+                
+                function animate() {
+                    if (!isWalking) {
+                        // Reset to standing position
+                        frames[1]();
+                        return;
+                    }
+                    
+                    // Apply current frame animation
+                    frames[frame]();
+                    
+                    // Move to next frame
+                    frame = (frame + 1) % frames.length;
+                    
+                    // Continue animation
+                    animationFrame = requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+            
+            function endGame(isWin) {
+                if (isWin) {
+                    gameOverTitle.textContent = "Congratulations!";
+                    gameOverMessage.textContent = "You found all the animals!";
+                } else {
+                    gameOverTitle.textContent = "Game Over!";
+                    gameOverMessage.textContent = "You've run out of steps!";
+                }
+                
+                gameOverStats.textContent = `You found ${discoveredAnimals} out of 8 animals in ${stepCount} steps.`;
+                gameOver.style.display = "block";
+            }
+            
+            function restartGame() {
+                // Remove all existing elements
+                const elements = document.querySelectorAll('.tile, .path, .fence, .tree, .animal, .footprint');
+                elements.forEach(el => el.remove());
+                
+                // Reset game state
+                playerX = Math.floor(window.innerWidth / 2);
+                playerY = Math.floor(window.innerHeight / 2);
+                stepCount = 0;
+                discoveredAnimals = 0;
+                
+                // Clear arrays
+                while(animals.length > 0) animals.pop();
+                while(footprints.length > 0) {
+                    const fp = footprints.pop();
+                    if (fp.element) fp.element.remove();
+                }
+                
+                // Reset UI
+                stepsCounter.textContent = '0';
+                animalsFoundEl.textContent = '0';
+                stepsProgress.style.width = '0%';
+                gameOver.style.display = 'none';
+                
+                // Initialize the game again
+                initGame();
+            }
+            
+            function setupControls() {
+                // Button controls
+                document.getElementById('btn-up').addEventListener('click', () => movePlayer(0, -20));
+                document.getElementById('btn-down').addEventListener('click', () => movePlayer(0, 20));
+                document.getElementById('btn-left').addEventListener('click', () => movePlayer(-20, 0));
+                document.getElementById('btn-right').addEventListener('click', () => movePlayer(20, 0));
+                
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowUp':
+                            movePlayer(0, -20);
+                            break;
+                        case 'ArrowDown':
+                            movePlayer(0, 20);
+                            break;
+                        case 'ArrowLeft':
+                            movePlayer(-20, 0);
+                            break;
+                        case 'ArrowRight':
+                            movePlayer(20, 0);
+                            break;
+                    }
+                });
+                
+                // Start game button
+                startButton.addEventListener('click', () => {
+                    welcome.style.display = 'none';
+                });
+                
+                // Restart game button
+                restartButton.addEventListener('click', restartGame);
+            }
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
+</body>
+</html>
